@@ -4,7 +4,8 @@ import math
 from typing import List, Dict, Optional
 from app.models.letter import Point, Stroke, ReferenceStroke, LetterTemplate, EvaluationResponse
 
-CHARACTERS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "characters")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CHARACTERS_DIR = os.path.join(BASE_DIR, "characters")
 
 def load_all_character_templates() -> Dict[str, LetterTemplate]:
     templates = {}
