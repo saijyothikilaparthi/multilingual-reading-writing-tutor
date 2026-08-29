@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multilingual Tutor — Writing Mode</title>
+  <title>Multilingual Reading & Writing Tutor</title>
   <!-- Load Noto Sans fonts for Indic Scripts (Telugu, Devanagari, Malayalam) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
   <div class="container">
     <header>
       <h1>✨ Multilingual Reading & Writing Tutor ✨</h1>
-      <p>Learn to write letters step-by-step!</p>
+      <p id="headerSubtitle">Learn to read and write in your language step-by-step!</p>
     </header>
 
     <!-- Step 1: Mode Selection -->
@@ -25,25 +25,28 @@
           <span class="icon">✍️</span>
           <span>Writing Mode</span>
         </button>
-        <button class="option-btn disabled" title="Reading Mode coming soon!">
+        <button id="btn-mode-read" class="option-btn">
           <span class="icon">📖</span>
-          <span>Reading Mode (Locked)</span>
+          <span>Reading Mode</span>
         </button>
+      </div>
+      <div class="disclaimer-banner" style="margin-top:20px; font-size: 0.82rem; color: #64748b; text-align: center;">
+        ℹ️ Educational learning, support & screening tool — not a medical diagnostic system.
       </div>
     </div>
 
     <!-- Step 2: Language Selection -->
     <div id="step-language" class="step-card">
-      <h2>Select Language</h2>
+      <h2 id="languageSelectTitle">Select Language</h2>
       <div id="languageGrid" class="btn-grid">
         <!-- Dynamically populated from API -->
       </div>
       <div class="controls" style="margin-top: 25px;">
-        <button id="btn-back-mode" class="action-btn btn-secondary">← Back</button>
+        <button id="btn-back-mode" class="action-btn btn-secondary">← Back to Modes</button>
       </div>
     </div>
 
-    <!-- Step 3: Demonstration & Writing Practice -->
+    <!-- Step 3 (Writing Mode): Demonstration & Writing Practice -->
     <div id="step-practice" class="step-card">
       <h2>Write Letter: <strong id="currentCharDisplay" class="character-glyph">A</strong></h2>
 
@@ -69,6 +72,73 @@
         </div>
       </div>
     </div>
+
+    <!-- Step 4 (Reading Mode): Reading Practice & Real-Time Tutor -->
+    <div id="step-reading" class="step-card">
+      <h2>Reading Mode — <span id="readingLangDisplay">English</span></h2>
+      
+      <!-- Level Tabs -->
+      <div class="reading-level-tabs">
+        <button class="level-tab active" data-level="basic">🔤 Basic (Letters)</button>
+        <button class="level-tab" data-level="word_sentence">📝 Words & Sentences</button>
+        <button class="level-tab" data-level="passage">📖 Textbook Passage</button>
+        <button class="level-tab" data-level="free">🗣️ Free Reading</button>
+      </div>
+
+      <!-- Item Navigation / Content Display -->
+      <div class="reading-content-card">
+        <div class="reading-item-header">
+          <span id="readingLevelBadge" class="badge">Basic Level</span>
+          <span id="readingItemCounter" class="counter">Item 1 / 4</span>
+        </div>
+
+        <div id="readingPromptBox" class="reading-prompt-box">
+          <h1 id="readingTargetText" class="reading-target-text">A</h1>
+          <p id="readingTransliteration" class="reading-transliteration">/eɪ/</p>
+        </div>
+
+        <!-- Reading Demo & Mic Controls -->
+        <div class="reading-demo-controls" style="margin: 15px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button id="btnReadingDemo" class="action-btn btn-secondary">▶️ Listen Demo Reading</button>
+          <button id="btnMicStart" class="mic-btn">
+            <span class="mic-icon">🎙️</span>
+            <span id="micBtnText">Click to Read Aloud</span>
+          </button>
+          <button id="btnMicStop" class="action-btn btn-secondary" style="display: none;">⏹️ Stop Listening</button>
+        </div>
+
+        <!-- Live Real-Time Transcription & Tutor Feedback -->
+        <div id="readingFeedbackArea" class="reading-feedback-area">
+          <div id="readingStatusBanner" class="feedback-banner" style="display: none; margin-bottom: 15px;"></div>
+
+          <div class="transcript-box">
+            <strong>SraVaani ASR Recognized Speech:</strong>
+            <p id="asrTranscriptText" class="transcript-text">Waiting for microphone input...</p>
+          </div>
+          
+          <div id="tutorResponseCard" class="tutor-response-card" style="display: none;">
+            <div class="tutor-header">
+              <span class="tutor-avatar">🤖</span>
+              <strong class="tutor-title">Conversational Voice Tutor</strong>
+              <button id="btnPlayTutorVoice" class="action-btn btn-secondary" style="margin-left: auto; padding: 4px 10px; font-size: 0.85rem;">🔊 Replay Voice</button>
+            </div>
+            <p id="tutorMessageText" class="tutor-message"></p>
+            <p id="tutorEncouragementText" class="tutor-encouragement"></p>
+          </div>
+        </div>
+
+        <div class="controls" style="margin-top: 20px;">
+          <button id="btnPrevReadingItem" class="action-btn btn-secondary">← Previous</button>
+          <button id="btnNextReadingItem" class="action-btn btn-primary">Next Item →</button>
+          <button id="btn-back-reading-lang" class="action-btn btn-secondary">← Change Language</button>
+        </div>
+      </div>
+
+      <div class="disclaimer-banner" style="margin-top: 20px; font-size: 0.8rem; color: #64748b; text-align: center;">
+        ℹ️ <strong>Support Tool:</strong> This reading tutor is designed for learning, practice, and educational support — NOT medical diagnosis.
+      </div>
+    </div>
+
   </div>
 
   <script src="/static/js/app.js"></script>

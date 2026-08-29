@@ -1,12 +1,23 @@
-class WritingTutor {
+class MultilingualTutorApp {
   constructor() {
-    this.currentStep = 'mode-select';
-    this.selectedLanguage = null;
+    this.mode = 'writing'; // 'writing' or 'reading'
+    this.selectedLanguage = 'en';
+
+    // Writing mode state
     this.letterTemplate = null;
     this.userStrokes = [];
     this.currentStroke = [];
     this.isDrawing = false;
     this.animating = false;
+
+    // Reading mode state
+    this.readingLevel = 'basic';
+    this.readingItems = [];
+    this.readingIndex = 0;
+    this.isListening = false;
+    this.mediaRecorder = null;
+    this.audioChunks = [];
+    this.websocket = null;
 
     this.initDOM();
     this.initEvents();
@@ -16,27 +27,53 @@ class WritingTutor {
     this.steps = {
       mode: document.getElementById('step-mode'),
       language: document.getElementById('step-language'),
-      practice: document.getElementById('step-practice')
+      practice: document.getElementById('step-practice'),
+      reading: document.getElementById('step-reading')
     };
 
     this.languageGrid = document.getElementById('languageGrid');
-    this.currentCharDisplay = document.getElementById('currentCharDisplay');
+    this.languageSelectTitle = document.getElementById('languageSelectTitle');
 
+    // Writing DOM
+    this.currentCharDisplay = document.getElementById('currentCharDisplay');
     this.demoCanvas = document.getElementById('demoCanvas');
     this.userCanvas = document.getElementById('userCanvas');
-
     this.demoCtx = this.demoCanvas.getContext('2d');
     this.userCtx = this.userCanvas.getContext('2d');
-
     this.feedbackBanner = document.getElementById('feedbackBanner');
     this.demoBtn = document.getElementById('demoBtn');
     this.submitBtn = document.getElementById('submitBtn');
     this.clearBtn = document.getElementById('clearBtn');
+
+    // Reading DOM
+    this.readingLangDisplay = document.getElementById('readingLangDisplay');
+    this.readingLevelBadge = document.getElementById('readingLevelBadge');
+    this.readingItemCounter = document.getElementById('readingItemCounter');
+    this.readingTargetText = document.getElementById('readingTargetText');
+    this.readingTransliteration = document.getElementById('readingTransliteration');
+    this.btnReadingDemo = document.getElementById('btnReadingDemo');
+    this.btnMicStart = document.getElementById('btnMicStart');
+    this.btnMicStop = document.getElementById('btnMicStop');
+    this.micBtnText = document.getElementById('micBtnText');
+    this.readingStatusBanner = document.getElementById('readingStatusBanner');
+    this.asrTranscriptText = document.getElementById('asrTranscriptText');
+    this.tutorResponseCard = document.getElementById('tutorResponseCard');
+    this.tutorMessageText = document.getElementById('tutorMessageText');
+    this.tutorEncouragementText = document.getElementById('tutorEncouragementText');
+    this.btnPlayTutorVoice = document.getElementById('btnPlayTutorVoice');
+    this.btnPrevReadingItem = document.getElementById('btnPrevReadingItem');
+    this.btnNextReadingItem = document.getElementById('btnNextReadingItem');
   }
 
   initEvents() {
-    // Mode Selection
+    // Mode Selection Buttons
     document.getElementById('btn-mode-write').addEventListener('click', () => {
+      this.mode = 'writing';
+      this.loadLanguagesAndShow();
+    });
+
+    document.getElementById('btn-mode-read').addEventListener('click', () => {
+      this.mode = 'reading';
       this.loadLanguagesAndShow();
     });
 
@@ -48,13 +85,55 @@ class WritingTutor {
       this.goToStep('language');
     });
 
-    // Practice controls
+    document.getElementById('btn-back-reading-lang').addEventListener('click', () => {
+      this.goToStep('language');
+    });
+
+    // Writing Controls
     this.demoBtn.addEventListener('click', () => this.playDemonstration());
     this.clearBtn.addEventListener('click', () => this.clearUserCanvas());
     this.submitBtn.addEventListener('click', () => this.evaluateWriting());
-
-    // User Canvas Drawing Events
     this.setupDrawingEvents();
+
+    // Reading Level Tabs
+    const levelTabs = document.querySelectorAll('.level-tab');
+    levelTabs.forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        levelTabs.forEach(t => t.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        this.readingLevel = e.currentTarget.dataset.level;
+        this.loadReadingContent();
+      });
+    });
+
+    // Reading Demo & Mic Controls
+    if (this.btnReadingDemo) {
+      this.btnReadingDemo.addEventListener('click', () => this.playReadingDemo());
+    }
+    this.btnMicStart.addEventListener('click', () => this.startListening());
+    this.btnMicStop.addEventListener('click', () => this.stopListening());
+    if (this.btnPlayTutorVoice) {
+      this.btnPlayTutorVoice.addEventListener('click', () => this.speakTutorFeedback());
+    }
+
+    // Reading Item Navigation
+    if (this.btnPrevReadingItem) {
+      this.btnPrevReadingItem.addEventListener('click', () => {
+        if (this.readingIndex > 0) {
+          this.readingIndex--;
+          this.renderCurrentReadingItem();
+        }
+      });
+    }
+
+    if (this.btnNextReadingItem) {
+      this.btnNextReadingItem.addEventListener('click', () => {
+        if (this.readingIndex < this.readingItems.length - 1) {
+          this.readingIndex++;
+          this.renderCurrentReadingItem();
+        }
+      });
+    }
   }
 
   goToStep(stepName) {
@@ -62,14 +141,17 @@ class WritingTutor {
     if (stepName === 'mode') this.steps.mode.classList.add('active');
     if (stepName === 'language') this.steps.language.classList.add('active');
     if (stepName === 'practice') this.steps.practice.classList.add('active');
+    if (stepName === 'reading') this.steps.reading.classList.add('active');
   }
 
   async loadLanguagesAndShow() {
     try {
       this.goToStep('language');
+      this.languageSelectTitle.textContent = this.mode === 'writing' ? 'Select Writing Language' : 'Select Reading Language';
       this.languageGrid.innerHTML = '<p>Loading languages...</p>';
 
-      const response = await fetch('/api/languages');
+      const url = this.mode === 'writing' ? '/api/languages' : '/api/reading/languages';
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load supported languages');
 
       const languages = await response.json();
@@ -81,13 +163,7 @@ class WritingTutor {
 
   renderLanguageGrid(languages) {
     this.languageGrid.innerHTML = '';
-    
-    const icons = {
-      en: '🔤',
-      te: 'తె',
-      ml: 'മ',
-      hi: 'अ'
-    };
+    const icons = { en: '🔤', te: 'తె', ml: 'മ', hi: 'अ' };
 
     languages.forEach(lang => {
       const btn = document.createElement('button');
@@ -98,13 +174,18 @@ class WritingTutor {
       `;
       btn.addEventListener('click', () => {
         this.selectedLanguage = lang.language_code;
-        this.selectLanguageAndStart(lang.language_code);
+        if (this.mode === 'writing') {
+          this.selectLanguageAndStartWriting(lang.language_code);
+        } else {
+          this.selectLanguageAndStartReading(lang.language_code, lang.language_name);
+        }
       });
       this.languageGrid.appendChild(btn);
     });
   }
 
-  async selectLanguageAndStart(langCode) {
+  // --- WRITING MODE (Preserved Exact Logic) ---
+  async selectLanguageAndStartWriting(langCode) {
     try {
       this.showFeedback('Loading character data...', 'info');
       const response = await fetch(`/api/languages/${langCode}/characters`);
@@ -127,8 +208,6 @@ class WritingTutor {
       if (!response.ok) throw new Error('Failed to load character template');
 
       this.letterTemplate = await response.json();
-
-      // UI display uses exact character glyph from backend character data
       this.currentCharDisplay.textContent = this.letterTemplate.character;
 
       this.goToStep('practice');
@@ -193,7 +272,6 @@ class WritingTutor {
     const w = this.demoCanvas.width;
     const h = this.demoCanvas.height;
     const strokes = this.letterTemplate.strokes;
-
     const completedStrokes = [];
 
     for (let i = 0; i < strokes.length; i++) {
@@ -219,10 +297,8 @@ class WritingTutor {
       const animate = () => {
         if (currentStep <= totalSteps) {
           const progress = currentStep / totalSteps;
-
           this.clearDemoCanvas();
 
-          // 1. Draw previously completed strokes
           completedStrokes.forEach(prevStroke => {
             const pStart = { x: prevStroke.start.x * w, y: prevStroke.start.y * h };
             const pEnd = { x: prevStroke.end.x * w, y: prevStroke.end.y * h };
@@ -243,15 +319,12 @@ class WritingTutor {
             this.drawPoint(this.demoCtx, pEnd.x, pEnd.y, '#e74c3c', 6);
           });
 
-          // 2. Draw current stroke in progress
           const currentPoint = this.interpolatePath(waypoints, progress);
-
           this.demoCtx.save();
           this.demoCtx.strokeStyle = '#357abd';
           this.demoCtx.lineWidth = 7;
           this.demoCtx.lineCap = 'round';
           this.demoCtx.lineJoin = 'round';
-
           this.demoCtx.beginPath();
           this.demoCtx.moveTo(start.x, start.y);
 
@@ -263,16 +336,13 @@ class WritingTutor {
           this.demoCtx.lineTo(currentPoint.x, currentPoint.y);
           this.demoCtx.stroke();
 
-          // Highlight active start point and direction indicator
           this.drawPoint(this.demoCtx, start.x, start.y, '#2ecc71', 8);
           this.drawArrow(this.demoCtx, start.x, start.y, currentPoint.x, currentPoint.y);
-
           this.demoCtx.restore();
 
           currentStep++;
           requestAnimationFrame(animate);
         } else {
-          // Draw full path, start point, and end point when animation completes
           this.demoCtx.save();
           this.demoCtx.strokeStyle = '#4a90e2';
           this.demoCtx.lineWidth = 6;
@@ -289,7 +359,6 @@ class WritingTutor {
           resolve();
         }
       };
-
       animate();
     });
   }
@@ -355,7 +424,6 @@ class WritingTutor {
       this.userCtx.lineWidth = 8;
       this.userCtx.lineCap = 'round';
       this.userCtx.lineJoin = 'round';
-
       this.userCtx.beginPath();
       this.userCtx.moveTo(point.x, point.y);
     };
@@ -365,7 +433,6 @@ class WritingTutor {
       e.preventDefault();
       const point = getCoords(e);
       this.currentStroke.push(point);
-
       this.userCtx.lineTo(point.x, point.y);
       this.userCtx.stroke();
     };
@@ -399,7 +466,6 @@ class WritingTutor {
 
     try {
       this.showFeedback('Evaluating your writing...', 'info');
-
       const payload = {
         letter_id: this.letterTemplate.letter_id,
         user_strokes: this.userStrokes,
@@ -414,7 +480,6 @@ class WritingTutor {
       });
 
       if (!response.ok) throw new Error('Evaluation failed.');
-
       const result = await response.json();
 
       if (result.success) {
@@ -437,11 +502,282 @@ class WritingTutor {
     this.feedbackBanner.textContent = '';
   }
 
+
+  // --- READING MODE IMPLEMENTATION ---
+
+  async selectLanguageAndStartReading(langCode, langName) {
+    this.selectedLanguage = langCode;
+    this.readingLangDisplay.textContent = langName || langCode.toUpperCase();
+    this.goToStep('reading');
+    this.loadReadingContent();
+  }
+
+  async loadReadingContent() {
+    try {
+      this.readingTargetText.textContent = 'Loading content...';
+      const url = `/api/reading/content/${this.selectedLanguage}?level=${this.readingLevel}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to load reading materials');
+
+      const data = await response.json();
+      this.readingItems = data.items || [];
+      this.readingIndex = 0;
+      this.renderCurrentReadingItem();
+    } catch (err) {
+      this.readingTargetText.textContent = 'Error loading content';
+      this.readingTransliteration.textContent = err.message;
+    }
+  }
+
+  renderCurrentReadingItem() {
+    if (!this.readingItems || this.readingItems.length === 0) {
+      this.readingTargetText.textContent = 'No materials available';
+      this.readingTransliteration.textContent = '';
+      return;
+    }
+
+    const item = this.readingItems[this.readingIndex];
+    this.readingLevelBadge.textContent = this.formatLevelName(this.readingLevel);
+    this.readingItemCounter.textContent = `Item ${this.readingIndex + 1} / ${this.readingItems.length}`;
+    
+    // Free Reading Mode: hide target text and show conversation prompt
+    if (this.readingLevel === 'free') {
+      this.readingTargetText.textContent = '🗣️ Free Reading & Speech';
+      this.readingTransliteration.textContent = item.display_text || 'Speak freely into the mic in your chosen language!';
+      if (this.btnReadingDemo) this.btnReadingDemo.style.display = 'none';
+    } else {
+      this.readingTargetText.textContent = item.display_text;
+      this.readingTransliteration.textContent = item.transliteration || '';
+      if (this.btnReadingDemo) this.btnReadingDemo.style.display = 'inline-block';
+    }
+
+    // Reset feedback display & status
+    this.asrTranscriptText.textContent = 'Click mic and speak clearly...';
+    this.tutorResponseCard.style.display = 'none';
+    if (this.readingStatusBanner) {
+      this.readingStatusBanner.style.display = 'none';
+      this.readingStatusBanner.textContent = '';
+      this.readingStatusBanner.className = 'feedback-banner';
+    }
+
+    // Button states - enable/disable Previous & Next correctly
+    if (this.btnPrevReadingItem) this.btnPrevReadingItem.disabled = (this.readingIndex === 0);
+    if (this.btnNextReadingItem) this.btnNextReadingItem.disabled = (this.readingIndex === this.readingItems.length - 1);
+
+    // Automatically play demo reading target on item load if not free reading
+    if (this.readingLevel !== 'free') {
+      setTimeout(() => this.playReadingDemo(), 400);
+    }
+  }
+
+  playReadingDemo() {
+    const item = this.readingItems[this.readingIndex];
+    if (!item) return;
+
+    const textToSpeak = item.display_text || item.expected_text;
+    if (!textToSpeak) return;
+
+    this.speakText(textToSpeak, this.selectedLanguage);
+  }
+
+  speakText(text, langCode = 'en') {
+    if (!('speechSynthesis' in window)) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Select natural child-friendly voices with Indian English accent fallback
+    const voices = window.speechSynthesis.getVoices();
+    const langMap = { en: ['en-IN', 'en-GB', 'en-US'], te: ['te-IN', 'te'], hi: ['hi-IN', 'hi'], ml: ['ml-IN', 'ml'] };
+    const preferredLangs = langMap[langCode] || ['en-IN', 'en-US'];
+
+    let matchedVoice = null;
+    for (const targetLang of preferredLangs) {
+      matchedVoice = voices.find(v => v.lang === targetLang || v.lang.startsWith(targetLang));
+      if (matchedVoice) break;
+    }
+
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+      utterance.lang = matchedVoice.lang;
+    } else {
+      utterance.lang = preferredLangs[0];
+    }
+
+    // Natural child-friendly speed (0.85-0.9x)
+    utterance.rate = 0.88;
+    utterance.pitch = 1.05;
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  speakTutorFeedback() {
+    if (this.currentTutorVoiceText) {
+      this.speakText(this.currentTutorVoiceText, this.selectedLanguage);
+    }
+  }
+
+  formatLevelName(level) {
+    const names = {
+      basic: 'Basic (Letter/Character)',
+      word_sentence: 'Word / Sentence Level',
+      passage: 'Textbook Passage',
+      free: 'Free Reading Mode'
+    };
+    return names[level] || level;
+  }
+
+  async startListening() {
+    if (this.isListening) return;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Microphone access is not supported on this browser or origin.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.isListening = true;
+      this.btnMicStart.style.display = 'none';
+      this.btnMicStop.style.display = 'inline-block';
+      this.micBtnText.textContent = 'Listening... Speak now!';
+      this.asrTranscriptText.textContent = '🎙️ Listening to your voice...';
+
+      this.audioChunks = [];
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          this.audioChunks.push(event.data);
+        }
+      };
+
+      this.mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+        this.processRecordedAudio(audioBlob);
+      };
+
+      this.mediaRecorder.start();
+
+      // Open WebSocket connection for real-time streaming updates if in passage/word level
+      this.connectWebSocket();
+    } catch (err) {
+      alert(`Microphone permission error or connection failure: ${err.message}`);
+      this.stopListening();
+    }
+  }
+
+  stopListening() {
+    this.isListening = false;
+    this.btnMicStart.style.display = 'inline-block';
+    this.btnMicStop.style.display = 'none';
+    this.micBtnText.textContent = 'Click to Read Aloud';
+
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      this.mediaRecorder.stop();
+    }
+    if (this.websocket) {
+      this.websocket.close();
+      this.websocket = null;
+    }
+  }
+
+  connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/reading/stream`;
+    
+    try {
+      this.websocket = new WebSocket(wsUrl);
+      this.websocket.onopen = () => {
+        const item = this.readingItems[this.readingIndex] || {};
+        this.websocket.send(JSON.stringify({
+          language_code: this.selectedLanguage,
+          level: this.readingLevel,
+          expected_text: item.expected_text || '',
+          audio_b64: "c3RyZWFtX2F1ZGlvX2RhdGE=" // sample chunk
+        }));
+      };
+
+      this.websocket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.event === 'transcription_update') {
+          this.renderTutorFeedback(data.asr, data.assessment, data.tutor);
+        }
+      };
+    } catch (e) {
+      console.warn('WebSocket stream error fallback to REST:', e);
+    }
+  }
+
+  async processRecordedAudio(audioBlob) {
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = async () => {
+      const base64Audio = reader.result.split(',')[1];
+      const currentItem = this.readingItems[this.readingIndex] || {};
+
+      try {
+        this.asrTranscriptText.textContent = 'Processing speech with SraVaani ASR...';
+        
+        const response = await fetch('/api/reading/process-full', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            language_code: this.selectedLanguage,
+            level: this.readingLevel,
+            expected_text: currentItem.expected_text || '',
+            audio_b64: base64Audio
+          })
+        });
+
+        if (!response.ok) throw new Error('Speech recognition server error');
+        const resData = await response.json();
+
+        if (resData.success) {
+          this.renderTutorFeedback(resData.asr, resData.assessment, resData.tutor);
+        } else {
+          // System/ASR technical failure - clearly distinguish technical error from reading error
+          this.asrTranscriptText.textContent = `⚠️ System/ASR Technical Error: ${resData.error || 'Audio processing failed.'}`;
+          if (this.readingStatusBanner) {
+            this.readingStatusBanner.textContent = `⚙️ Technical Error: ${resData.error || 'Speech recognition engine unreachable'}`;
+            this.readingStatusBanner.className = 'feedback-banner show error';
+            this.readingStatusBanner.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        this.asrTranscriptText.textContent = `⚠️ Error: ${err.message}`;
+      }
+    };
+  }
+
+  renderTutorFeedback(asr, assessment, tutor) {
+    this.asrTranscriptText.textContent = `"${asr.transcript}" (Service: ${asr.service_used})`;
+    this.tutorMessageText.textContent = tutor.message;
+    this.tutorEncouragementText.textContent = tutor.encouragement;
+    this.tutorResponseCard.style.display = 'block';
+
+    // Status Banner for SUCCESS / ERROR
+    if (this.readingStatusBanner) {
+      if (assessment.is_correct) {
+        this.readingStatusBanner.textContent = `🎉 SUCCESS! Accuracy: ${assessment.accuracy_score}%`;
+        this.readingStatusBanner.className = 'feedback-banner show success';
+      } else {
+        const errorDetail = assessment.errors && assessment.errors.length > 0 ? assessment.errors[0].tip : 'Please practice again.';
+        this.readingStatusBanner.textContent = `❌ NEEDS PRACTICE! ${errorDetail}`;
+        this.readingStatusBanner.className = 'feedback-banner show error';
+      }
+      this.readingStatusBanner.style.display = 'block';
+    }
+
+    // Play Voice Feedback from Tutor
+    this.currentTutorVoiceText = tutor.audio_feedback_text || `${tutor.message} ${tutor.encouragement}`;
+    this.speakTutorFeedback();
+  }
+
   sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  window.app = new WritingTutor();
+  window.app = new MultilingualTutorApp();
 });
