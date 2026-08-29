@@ -1,0 +1,70 @@
+{
+  "language_code": "hi",
+  "language_name": "Hindi",
+  "script_name": "Devanagari",
+  "characters": [
+    {
+      "letter_id": "hi_A",
+      "char": "अ",
+      "unicode_value": "U+0905",
+      "display_name": "अ (A)",
+      "strokes": [
+        {
+          "stroke_index": 0,
+          "start_point": { "x": 0.35, "y": 0.25 },
+          "end_point": { "x": 0.50, "y": 0.45 },
+          "path_points": [
+            { "x": 0.35, "y": 0.25 },
+            { "x": 0.48, "y": 0.22 },
+            { "x": 0.52, "y": 0.32 },
+            { "x": 0.50, "y": 0.45 }
+          ],
+          "direction_description": "Upper curve"
+        },
+        {
+          "stroke_index": 1,
+          "start_point": { "x": 0.50, "y": 0.45 },
+          "end_point": { "x": 0.28, "y": 0.72 },
+          "path_points": [
+            { "x": 0.50, "y": 0.45 },
+            { "x": 0.62, "y": 0.55 },
+            { "x": 0.58, "y": 0.75 },
+            { "x": 0.42, "y": 0.80 },
+            { "x": 0.28, "y": 0.72 }
+          ],
+          "direction_description": "Lower sweeping curve extending left"
+        },
+        {
+          "stroke_index": 2,
+          "start_point": { "x": 0.50, "y": 0.52 },
+          "end_point": { "x": 0.72, "y": 0.52 },
+          "path_points": [
+            { "x": 0.50, "y": 0.52 },
+            { "x": 0.72, "y": 0.52 }
+          ],
+          "direction_description": "Middle horizontal connector"
+        },
+        {
+          "stroke_index": 3,
+          "start_point": { "x": 0.72, "y": 0.22 },
+          "end_point": { "x": 0.72, "y": 0.82 },
+          "path_points": [
+            { "x": 0.72, "y": 0.22 },
+            { "x": 0.72, "y": 0.82 }
+          ],
+          "direction_description": "Vertical line"
+        },
+        {
+          "stroke_index": 4,
+          "start_point": { "x": 0.25, "y": 0.22 },
+          "end_point": { "x": 0.82, "y": 0.22 },
+          "path_points": [
+            { "x": 0.25, "y": 0.22 },
+            { "x": 0.82, "y": 0.22 }
+          ],
+          "direction_description": "Top horizontal bar (Shirorekha)"
+        }
+      ]
+    }
+  ]
+}

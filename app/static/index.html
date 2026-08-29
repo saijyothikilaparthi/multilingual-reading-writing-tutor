@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multilingual Tutor — Writing Mode</title>
+  <!-- Load Noto Sans fonts for Indic Scripts (Telugu, Devanagari, Malayalam) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;700&family=Noto+Sans+Malayalam:wght@500;700&family=Noto+Sans+Telugu:wght@500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>✨ Multilingual Reading & Writing Tutor ✨</h1>
+      <p>Learn to write letters step-by-step!</p>
+    </header>
+
+    <!-- Step 1: Mode Selection -->
+    <div id="step-mode" class="step-card active">
+      <h2>Choose Learning Mode</h2>
+      <div class="btn-grid">
+        <button id="btn-mode-write" class="option-btn">
+          <span class="icon">✍️</span>
+          <span>Writing Mode</span>
+        </button>
+        <button class="option-btn disabled" title="Reading Mode coming soon!">
+          <span class="icon">📖</span>
+          <span>Reading Mode (Locked)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Language Selection -->
+    <div id="step-language" class="step-card">
+      <h2>Select Language</h2>
+      <div id="languageGrid" class="btn-grid">
+        <!-- Dynamically populated from API -->
+      </div>
+      <div class="controls" style="margin-top: 25px;">
+        <button id="btn-back-mode" class="action-btn btn-secondary">← Back</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Demonstration & Writing Practice -->
+    <div id="step-practice" class="step-card">
+      <h2>Write Letter: <strong id="currentCharDisplay" class="character-glyph">A</strong></h2>
+
+      <div class="practice-container">
+        <div class="guide-legend">
+          <span class="legend-item"><span class="dot start"></span> Start Point</span>
+          <span class="legend-item"><span class="dot path"></span> Stroke Path</span>
+          <span class="legend-item"><span class="dot end"></span> End Point</span>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="demoCanvas"></canvas>
+          <canvas id="userCanvas"></canvas>
+        </div>
+
+        <div id="feedbackBanner" class="feedback-banner"></div>
+
+        <div class="controls">
+          <button id="demoBtn" class="action-btn btn-secondary">▶️ Watch Demo</button>
+          <button id="clearBtn" class="action-btn btn-secondary">🧹 Clear</button>
+          <button id="submitBtn" class="action-btn btn-primary">Check Writing ✓</button>
+          <button id="btn-back-lang" class="action-btn btn-secondary">← Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

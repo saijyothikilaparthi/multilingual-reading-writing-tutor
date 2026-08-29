@@ -1,0 +1,22 @@
+{
+  "language": "malayalam",
+  "language_code": "ml",
+  "character": "അ",
+  "unicode": "U+0D05",
+  "letter_id": "ml_U+0D05",
+  "is_verified": false,
+  "data_status": "PLACEHOLDER_REQUIRED",
+  "source": "Unverified draft coordinates - Requires verified handwriting dataset source",
+  "strokes": [
+    {
+      "stroke_number": 1,
+      "direction_description": "Initial loop",
+      "start": { "x": 0.30, "y": 0.35 },
+      "end": { "x": 0.45, "y": 0.40 },
+      "points": [
+        { "x": 0.30, "y": 0.35 },
+        { "x": 0.45, "y": 0.40 }
+      ]
+    }
+  ]
+}

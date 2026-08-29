@@ -1,0 +1,41 @@
+{
+  "language_code": "ml",
+  "language_name": "Malayalam",
+  "script_name": "Malayalam",
+  "characters": [
+    {
+      "letter_id": "ml_A",
+      "char": "അ",
+      "unicode_value": "U+0D05",
+      "display_name": "അ (A)",
+      "strokes": [
+        {
+          "stroke_index": 0,
+          "start_point": { "x": 0.30, "y": 0.35 },
+          "end_point": { "x": 0.45, "y": 0.40 },
+          "path_points": [
+            { "x": 0.30, "y": 0.35 },
+            { "x": 0.38, "y": 0.22 },
+            { "x": 0.48, "y": 0.28 },
+            { "x": 0.45, "y": 0.40 }
+          ],
+          "direction_description": "Initial top loop"
+        },
+        {
+          "stroke_index": 1,
+          "start_point": { "x": 0.45, "y": 0.40 },
+          "end_point": { "x": 0.78, "y": 0.75 },
+          "path_points": [
+            { "x": 0.45, "y": 0.40 },
+            { "x": 0.32, "y": 0.55 },
+            { "x": 0.30, "y": 0.75 },
+            { "x": 0.48, "y": 0.82 },
+            { "x": 0.65, "y": 0.72 },
+            { "x": 0.78, "y": 0.75 }
+          ],
+          "direction_description": "Main rounded body and right extension"
+        }
+      ]
+    }
+  ]
+}

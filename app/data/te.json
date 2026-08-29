@@ -1,0 +1,58 @@
+{
+  "language_code": "te",
+  "language_name": "Telugu",
+  "script_name": "Telugu",
+  "characters": [
+    {
+      "letter_id": "te_A",
+      "char": "అ",
+      "unicode_value": "U+0C05",
+      "display_name": "అ (A)",
+      "strokes": [
+        {
+          "stroke_index": 0,
+          "start_point": { "x": 0.28, "y": 0.38 },
+          "end_point": { "x": 0.82, "y": 0.40 },
+          "path_points": [
+            { "x": 0.28, "y": 0.38 },
+            { "x": 0.22, "y": 0.32 },
+            { "x": 0.22, "y": 0.22 },
+            { "x": 0.30, "y": 0.16 },
+            { "x": 0.40, "y": 0.16 },
+            { "x": 0.46, "y": 0.24 },
+            { "x": 0.44, "y": 0.36 },
+            { "x": 0.36, "y": 0.46 },
+            { "x": 0.26, "y": 0.54 },
+            { "x": 0.18, "y": 0.66 },
+            { "x": 0.18, "y": 0.80 },
+            { "x": 0.28, "y": 0.90 },
+            { "x": 0.48, "y": 0.92 },
+            { "x": 0.66, "y": 0.86 },
+            { "x": 0.78, "y": 0.72 },
+            { "x": 0.80, "y": 0.58 },
+            { "x": 0.72, "y": 0.48 },
+            { "x": 0.60, "y": 0.48 },
+            { "x": 0.52, "y": 0.56 },
+            { "x": 0.56, "y": 0.66 },
+            { "x": 0.68, "y": 0.66 },
+            { "x": 0.76, "y": 0.58 },
+            { "x": 0.76, "y": 0.40 },
+            { "x": 0.82, "y": 0.40 }
+          ],
+          "direction_description": "Start at top-left inner curve, loop up around the top, descend into large outer bottom bowl, curve up the right, loop inward/clockwise near middle right, and branch horizontally to the right"
+        },
+        {
+          "stroke_index": 1,
+          "start_point": { "x": 0.32, "y": 0.12 },
+          "end_point": { "x": 0.58, "y": 0.08 },
+          "path_points": [
+            { "x": 0.32, "y": 0.12 },
+            { "x": 0.42, "y": 0.16 },
+            { "x": 0.58, "y": 0.08 }
+          ],
+          "direction_description": "Top tick / checkmark (Talakattu) drawn left to right above the top loop"
+        }
+      ]
+    }
+  ]
+}

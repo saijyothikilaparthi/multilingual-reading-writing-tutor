@@ -1,0 +1,48 @@
+{
+  "language_code": "en",
+  "language_name": "English",
+  "script_name": "Latin",
+  "characters": [
+    {
+      "letter_id": "en_A",
+      "char": "A",
+      "unicode_value": "U+0041",
+      "display_name": "A",
+      "strokes": [
+        {
+          "stroke_index": 0,
+          "start_point": { "x": 0.5, "y": 0.15 },
+          "end_point": { "x": 0.2, "y": 0.85 },
+          "path_points": [
+            { "x": 0.5, "y": 0.15 },
+            { "x": 0.35, "y": 0.5 },
+            { "x": 0.2, "y": 0.85 }
+          ],
+          "direction_description": "Slant down to the left"
+        },
+        {
+          "stroke_index": 1,
+          "start_point": { "x": 0.5, "y": 0.15 },
+          "end_point": { "x": 0.8, "y": 0.85 },
+          "path_points": [
+            { "x": 0.5, "y": 0.15 },
+            { "x": 0.65, "y": 0.5 },
+            { "x": 0.8, "y": 0.85 }
+          ],
+          "direction_description": "Slant down to the right"
+        },
+        {
+          "stroke_index": 2,
+          "start_point": { "x": 0.3, "y": 0.55 },
+          "end_point": { "x": 0.7, "y": 0.55 },
+          "path_points": [
+            { "x": 0.3, "y": 0.55 },
+            { "x": 0.5, "y": 0.55 },
+            { "x": 0.7, "y": 0.55 }
+          ],
+          "direction_description": "Horizontal crossbar left to right"
+        }
+      ]
+    }
+  ]
+}
