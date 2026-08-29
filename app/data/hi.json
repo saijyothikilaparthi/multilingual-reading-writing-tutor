@@ -3,68 +3,52 @@
   "language_name": "Hindi",
   "script_name": "Devanagari",
   "characters": [
-    {
-      "letter_id": "hi_A",
-      "char": "अ",
-      "unicode_value": "U+0905",
-      "display_name": "अ (A)",
-      "strokes": [
-        {
-          "stroke_index": 0,
-          "start_point": { "x": 0.35, "y": 0.25 },
-          "end_point": { "x": 0.50, "y": 0.45 },
-          "path_points": [
-            { "x": 0.35, "y": 0.25 },
-            { "x": 0.48, "y": 0.22 },
-            { "x": 0.52, "y": 0.32 },
-            { "x": 0.50, "y": 0.45 }
-          ],
-          "direction_description": "Upper curve"
-        },
-        {
-          "stroke_index": 1,
-          "start_point": { "x": 0.50, "y": 0.45 },
-          "end_point": { "x": 0.28, "y": 0.72 },
-          "path_points": [
-            { "x": 0.50, "y": 0.45 },
-            { "x": 0.62, "y": 0.55 },
-            { "x": 0.58, "y": 0.75 },
-            { "x": 0.42, "y": 0.80 },
-            { "x": 0.28, "y": 0.72 }
-          ],
-          "direction_description": "Lower sweeping curve extending left"
-        },
-        {
-          "stroke_index": 2,
-          "start_point": { "x": 0.50, "y": 0.52 },
-          "end_point": { "x": 0.72, "y": 0.52 },
-          "path_points": [
-            { "x": 0.50, "y": 0.52 },
-            { "x": 0.72, "y": 0.52 }
-          ],
-          "direction_description": "Middle horizontal connector"
-        },
-        {
-          "stroke_index": 3,
-          "start_point": { "x": 0.72, "y": 0.22 },
-          "end_point": { "x": 0.72, "y": 0.82 },
-          "path_points": [
-            { "x": 0.72, "y": 0.22 },
-            { "x": 0.72, "y": 0.82 }
-          ],
-          "direction_description": "Vertical line"
-        },
-        {
-          "stroke_index": 4,
-          "start_point": { "x": 0.25, "y": 0.22 },
-          "end_point": { "x": 0.82, "y": 0.22 },
-          "path_points": [
-            { "x": 0.25, "y": 0.22 },
-            { "x": 0.82, "y": 0.22 }
-          ],
-          "direction_description": "Top horizontal bar (Shirorekha)"
-        }
-      ]
-    }
+    { "letter_id": "hi_U+0905", "char": "अ", "unicode_value": "U+0905", "display_name": "अ (A)" },
+    { "letter_id": "hi_U+0906", "char": "आ", "unicode_value": "U+0906", "display_name": "आ (AA)" },
+    { "letter_id": "hi_U+0907", "char": "इ", "unicode_value": "U+0907", "display_name": "इ (I)" },
+    { "letter_id": "hi_U+0908", "char": "ई", "unicode_value": "U+0908", "display_name": "ई (EE)" },
+    { "letter_id": "hi_U+0909", "char": "उ", "unicode_value": "U+0909", "display_name": "उ (U)" },
+    { "letter_id": "hi_U+090A", "char": "ऊ", "unicode_value": "U+090A", "display_name": "ऊ (OO)" },
+    { "letter_id": "hi_U+090B", "char": "ऋ", "unicode_value": "U+090B", "display_name": "ऋ (RI)" },
+    { "letter_id": "hi_U+090F", "char": "ए", "unicode_value": "U+090F", "display_name": "ए (E)" },
+    { "letter_id": "hi_U+0910", "char": "ऐ", "unicode_value": "U+0910", "display_name": "ऐ (AI)" },
+    { "letter_id": "hi_U+0912", "char": "ओ", "unicode_value": "U+0912", "display_name": "ओ (O)" },
+    { "letter_id": "hi_U+0914", "char": "औ", "unicode_value": "U+0914", "display_name": "औ (AU)" },
+    { "letter_id": "hi_U+0905_U+0902", "char": "अं", "unicode_value": "U+0905+U+0902", "display_name": "अं (AM)" },
+    { "letter_id": "hi_U+0905_U+0903", "char": "अः", "unicode_value": "U+0905+U+0903", "display_name": "अः (AHA)" },
+    { "letter_id": "hi_U+0915", "char": "क", "unicode_value": "U+0915", "display_name": "क (KA)" },
+    { "letter_id": "hi_U+0916", "char": "ख", "unicode_value": "U+0916", "display_name": "ख (KHA)" },
+    { "letter_id": "hi_U+0917", "char": "ग", "unicode_value": "U+0917", "display_name": "ग (GA)" },
+    { "letter_id": "hi_U+0918", "char": "घ", "unicode_value": "U+0918", "display_name": "घ (GHA)" },
+    { "letter_id": "hi_U+091A", "char": "च", "unicode_value": "U+091A", "display_name": "च (CHA)" },
+    { "letter_id": "hi_U+091B", "char": "छ", "unicode_value": "U+091B", "display_name": "छ (CHHA)" },
+    { "letter_id": "hi_U+091C", "char": "ज", "unicode_value": "U+091C", "display_name": "ज (JA)" },
+    { "letter_id": "hi_U+091D", "char": "झ", "unicode_value": "U+091D", "display_name": "झ (JHA)" },
+    { "letter_id": "hi_U+091F", "char": "ट", "unicode_value": "U+091F", "display_name": "ट (TA)" },
+    { "letter_id": "hi_U+0920", "char": "ठ", "unicode_value": "U+0920", "display_name": "ठ (THA)" },
+    { "letter_id": "hi_U+0921", "char": "ड", "unicode_value": "U+0921", "display_name": "ड (DA)" },
+    { "letter_id": "hi_U+0922", "char": "ढ", "unicode_value": "U+0922", "display_name": "ढ (DHA)" },
+    { "letter_id": "hi_U+0923", "char": "ण", "unicode_value": "U+0923", "display_name": "ण (NA)" },
+    { "letter_id": "hi_U+0924", "char": "त", "unicode_value": "U+0924", "display_name": "त (TA)" },
+    { "letter_id": "hi_U+0925", "char": "थ", "unicode_value": "U+0925", "display_name": "थ (THA)" },
+    { "letter_id": "hi_U+0926", "char": "द", "unicode_value": "U+0926", "display_name": "द (DA)" },
+    { "letter_id": "hi_U+0927", "char": "ध", "unicode_value": "U+0927", "display_name": "ध (DHA)" },
+    { "letter_id": "hi_U+0928", "char": "न", "unicode_value": "U+0928", "display_name": "न (NA)" },
+    { "letter_id": "hi_U+092A", "char": "प", "unicode_value": "U+092A", "display_name": "प (PA)" },
+    { "letter_id": "hi_U+092B", "char": "फ", "unicode_value": "U+092B", "display_name": "फ (PHA)" },
+    { "letter_id": "hi_U+092C", "char": "ब", "unicode_value": "U+092C", "display_name": "ब (BA)" },
+    { "letter_id": "hi_U+092D", "char": "भ", "unicode_value": "U+092D", "display_name": "भ (BHA)" },
+    { "letter_id": "hi_U+092E", "char": "म", "unicode_value": "U+092E", "display_name": "म (MA)" },
+    { "letter_id": "hi_U+092F", "char": "य", "unicode_value": "U+092F", "display_name": "य (YA)" },
+    { "letter_id": "hi_U+0930", "char": "र", "unicode_value": "U+0930", "display_name": "र (RA)" },
+    { "letter_id": "hi_U+0932", "char": "ल", "unicode_value": "U+0932", "display_name": "ल (LA)" },
+    { "letter_id": "hi_U+0935", "char": "व", "unicode_value": "U+0935", "display_name": "व (VA)" },
+    { "letter_id": "hi_U+0936", "char": "श", "unicode_value": "U+0936", "display_name": "श (SHA)" },
+    { "letter_id": "hi_U+0937", "char": "ष", "unicode_value": "U+0937", "display_name": "ष (SHA)" },
+    { "letter_id": "hi_U+0938", "char": "स", "unicode_value": "U+0938", "display_name": "स (SA)" },
+    { "letter_id": "hi_U+0939", "char": "ह", "unicode_value": "U+0939", "display_name": "ह (HA)" },
+    { "letter_id": "hi_U+0915_U+094D_U+0937", "char": "क्ष", "unicode_value": "U+0915+U+094D+U+0937", "display_name": "क्ष (KSHA)" },
+    { "letter_id": "hi_U+0924_U+094D_U+0930", "char": "त्र", "unicode_value": "U+0924+U+094D+U+0930", "display_name": "त्र (TRA)" },
+    { "letter_id": "hi_U+091C_U+094D_U+091E", "char": "ज्ञ", "unicode_value": "U+091C+U+094D+U+091E", "display_name": "ज्ञ (GYA)" }
   ]
 }

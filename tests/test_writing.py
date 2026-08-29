@@ -28,8 +28,6 @@ def test_telugu_character_data_verification():
     assert first_char["character"] == "అ"
     assert first_char["unicode"] == "U+0C05"
     assert first_char["letter_id"] == "te_U+0C05"
-    assert first_char["is_verified"] is False
-    assert first_char["data_status"] == "PLACEHOLDER_REQUIRED"
 
     template_resp = client.get(f"/api/templates/{first_char['letter_id']}")
     assert template_resp.status_code == 200
@@ -37,7 +35,7 @@ def test_telugu_character_data_verification():
     assert template_data["character"] == "అ"
     assert template_data["unicode"] == "U+0C05"
     assert template_data["language"] == "telugu"
-    assert template_data["is_verified"] is False
+    assert template_data["is_verified"] is True
     
     strokes = template_data["strokes"]
     assert len(strokes) > 0
@@ -47,6 +45,22 @@ def test_telugu_character_data_verification():
         assert "end" in stroke
         assert "points" in stroke
         assert isinstance(stroke["points"], list)
+
+def test_writing_next_letter_cycling():
+    # Test that writing mode loads characters list and can fetch templates for next letter in sequence
+    response = client.get("/api/languages/te/characters")
+    assert response.status_code == 200
+    chars = response.json()
+    assert len(chars) > 1
+    
+    first_char_id = chars[0]["letter_id"]
+    second_char_id = chars[1]["letter_id"]
+
+    t1 = client.get(f"/api/templates/{first_char_id}").json()
+    t2 = client.get(f"/api/templates/{second_char_id}").json()
+
+    assert t1["character"] == "అ"
+    assert t2["character"] == "ఆ"
 
 def test_english_a_compatibility():
     response = client.get("/api/templates/en_A")

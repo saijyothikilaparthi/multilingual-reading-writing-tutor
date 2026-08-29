@@ -138,9 +138,24 @@ def process_full_reading_attempt(
     )
 
     if not asr_res.success:
+        assessment = ReadingEvaluatorService.evaluate(
+            language_code=language_code,
+            level=level,
+            expected_text=expected_text,
+            recognized_transcript=""
+        )
+        tutor_res = ConversationalTutorService.generate_feedback(
+            language_code=language_code,
+            level=level,
+            expected_text=expected_text,
+            recognized_transcript="",
+            assessment=assessment
+        )
         return {
             "success": False,
             "asr": asr_res,
+            "assessment": assessment,
+            "tutor": tutor_res,
             "error": asr_res.error or "Audio recognition failed",
             "disclaimer": DISCLAIMER
         }

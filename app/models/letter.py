@@ -82,16 +82,23 @@ class ReadingAssessmentRequest(BaseModel):
     expected_text: str
     recognized_transcript: str
 
+class PhonemeScore(BaseModel):
+    phoneme: str
+    gop_score: float = Field(..., description="Goodness of Pronunciation score 0-100")
+    status: str = Field(..., description="correct, mispronounced, needs_practice")
+
 class ErrorDetail(BaseModel):
     token: str
     error_type: str = Field(..., description="missing, mispronounced, substituted, extra")
     expected: Optional[str] = None
     got: Optional[str] = None
     tip: Optional[str] = None
+    phonemes: Optional[List[PhonemeScore]] = None
 
 class ReadingAssessmentResponse(BaseModel):
     is_correct: bool
     accuracy_score: float = Field(..., description="0-100 score")
+    pronunciation_score: float = Field(default=100.0, description="0-100 GOP phoneme score")
     recognized_transcript: str
     expected_text: str
     errors: List[ErrorDetail]

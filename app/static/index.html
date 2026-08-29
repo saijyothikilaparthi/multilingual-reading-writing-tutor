@@ -7,11 +7,14 @@
   <!-- Load Noto Sans fonts for Indic Scripts (Telugu, Devanagari, Malayalam) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;700&family=Noto+Sans+Malayalam:wght@500;700&family=Noto+Sans+Telugu:wght@500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;700;800&family=Noto+Serif+Devanagari:wght@600;700&family=Noto+Sans+Telugu:wght@500;700;800&family=Noto+Serif+Telugu:wght@600;700&family=Noto+Sans+Malayalam:wght@500;700;800&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
   <div class="container">
+    <div class="anime-avatar-badge" title="AI Anime Tutor Sensei">
+      <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=AnimeSensei&backgroundColor=0f172a" alt="Anime Tutor Avatar">
+    </div>
     <header>
       <h1>✨ Multilingual Reading & Writing Tutor ✨</h1>
       <p id="headerSubtitle">Learn to read and write in your language step-by-step!</p>
@@ -68,7 +71,8 @@
           <button id="demoBtn" class="action-btn btn-secondary">▶️ Watch Demo</button>
           <button id="clearBtn" class="action-btn btn-secondary">🧹 Clear</button>
           <button id="submitBtn" class="action-btn btn-primary">Check Writing ✓</button>
-          <button id="btn-back-lang" class="action-btn btn-secondary">← Back</button>
+          <button id="nextLetterBtn" class="action-btn btn-primary">Next Letter →</button>
+          <button id="btn-back-lang" class="action-btn btn-secondary">← Change Language</button>
         </div>
       </div>
     </div>
@@ -128,7 +132,6 @@
         </div>
 
         <div class="controls" style="margin-top: 20px;">
-          <button id="btnPrevReadingItem" class="action-btn btn-secondary">← Previous</button>
           <button id="btnNextReadingItem" class="action-btn btn-primary">Next Item →</button>
           <button id="btn-back-reading-lang" class="action-btn btn-secondary">← Change Language</button>
         </div>

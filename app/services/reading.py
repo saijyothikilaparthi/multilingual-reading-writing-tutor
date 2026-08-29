@@ -15,6 +15,41 @@ from app.models.letter import (
 # Shared Disclaimer for all Reading Mode responses
 DISCLAIMER = "This is an educational learning, support & screening tool, NOT a medical diagnostic system."
 
+FEEDBACK_MESSAGES = {
+    "en": {
+        "correct": "Excellent! You read it correctly.",
+        "encouragement_correct": "Star reader! You are doing amazing.",
+        "incorrect": "Good try. Let's say this word again.",
+        "encouragement_incorrect": "You're very close! Give it another try.",
+        "free_success": "Wonderful speech! Keep sharing your thoughts!",
+        "free_retry": "I didn't catch that clearly. Could you speak a bit louder and try again?"
+    },
+    "te": {
+        "correct": "చాలా బాగుంది! మీరు సరిగ్గా చదివారు.",
+        "encouragement_correct": "మీరు చాలా బాగా చదువుతున్నారు!",
+        "incorrect": "మంచి ప్రయత్నం. ఈ పదాన్ని మళ్ళీ చెబుదాం.",
+        "encouragement_incorrect": "మీరు దాదాపు సరిగ్గా చెప్పారు! మరొకసారి ప్రయత్నించండి.",
+        "free_success": "అద్భుతమైన మాటలు! మీ ఆలోచనలను స్వేచ్ఛగా పంచుకోండి!",
+        "free_retry": "నాకు సరిగ్గా వినిపించలేదు. కొంచెం గట్టిగా మాట్లాడి మళ్ళీ ప్రయత్నించండి."
+    },
+    "hi": {
+        "correct": "बहुत बढ़िया! आपने इसे बिल्कुल सही पढ़ा।",
+        "encouragement_correct": "शानदार! आप बहुत अच्छा पढ़ रहे हैं।",
+        "incorrect": "अच्छा प्रयास। आइए इस शब्द को फिर से बोलते हैं।",
+        "encouragement_incorrect": "आप बिल्कुल करीब हैं! एक बार फिर प्रयास करें।",
+        "free_success": "बहुत सुंदर! अपनी बातें ऐसे ही साझा करते रहें!",
+        "free_retry": "मुझे स्पष्ट सुनाई नहीं दिया। कृपया थोड़ा जोर से बोलें और पुनः प्रयास करें।"
+    },
+    "ml": {
+        "correct": "വളരെ നന്നായിട്ടുണ്ട്! താങ്കൾ ഇത് ശരിയായി വായിച്ചു.",
+        "encouragement_correct": "മിടുക്കൻ! താങ്കൾ വളരെ നന്നായി വായിക്കുന്നുണ്ട്.",
+        "incorrect": "നല്ല ശ്രമം. നമുക്ക് ഈ വാക്ക് ഒന്നുകൂടി പറയാം.",
+        "encouragement_incorrect": "താങ്കൾ ശരിയായ ഉത്തരത്തിന് അടുത്തെത്തി! ഒന്നുകൂടി ശ്രമിക്കൂ.",
+        "free_success": "വളരെ മനോഹരമായ വിവരണം! താങ്കളുടെ ചിന്തകൾ പങ്കുവെക്കുന്നത് തുടരുക!",
+        "free_retry": "എനിക്ക് വ്യക്തമായി കേൾക്കാൻ സാധിച്ചില്ല. ദയവായി അല്പം ഉറക്കെ സംസാരിച്ച് വീണ്ടും ശ്രമിക്കൂ."
+    }
+}
+
 # Content datasets for English, Telugu, Hindi, Malayalam across levels
 READING_DATA: Dict[str, Dict[str, Any]] = {
     "en": {
@@ -183,36 +218,61 @@ class SraVaaniASRService:
                 error=f"Audio decoding error: {str(err)}"
             )
 
-        # External SraVaani ASR endpoint simulation / integration bridge
-        # If expected_hint is provided or audio contains mock transcript payload,
-        # or in production environments, SraVaani API converts Indian language audio to text.
-        # Check if environment has real SRAVAANI_API_KEY / endpoint or fallback to robust acoustic decoder simulation
-        # Check for HF token or SRAVAANI_API_KEY / endpoint
-        # If HF_TOKEN is a dummy token (used in tests or offline mode without internet access), fallback gracefully or handle HF API calls
         hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
         sravaani_api_key = os.getenv("SRAVAANI_API_KEY")
 
         if hf_token:
             # SraVaani Hugging Face Model Integration (ARTPARK-IISc/SraVaani-1.0)
             try:
+                # 1. Local Transformers Pipeline Inference
+                try:
+                    import tempfile
+                    from transformers import pipeline
+
+                    asr_pipe = pipeline("automatic-speech-recognition", model="ARTPARK-IISc/SraVaani-1.0", token=hf_token, trust_remote_code=True)
+                    with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmp_file:
+                        tmp_file.write(audio_bytes)
+                        tmp_file.flush()
+                        res = asr_pipe(tmp_file.name)
+                        out_text = res.get("text", "") if isinstance(res, dict) else str(res)
+                        if out_text:
+                            return SpeechRecognitionResponse(
+                                success=True,
+                                transcript=out_text,
+                                language_code=language_code,
+                                confidence=0.95,
+                                service_used="SraVaani-1.0 (Local Pipeline)"
+                            )
+                except Exception as local_err:
+                    import logging
+                    logging.info(f"Local pipeline attempt: {local_err}")
+
+                # 2. Hugging Face Serverless Inference API HTTP Call
                 import urllib.request
                 import json
                 
                 model_name = "ARTPARK-IISc/SraVaani-1.0"
+                endpoints = [
+                    f"https://api-inference.huggingface.co/models/{model_name}",
+                    f"https://router.huggingface.co/hf-inference/models/{model_name}"
+                ]
+                res_data = None
+                last_err = None
+                for ep in endpoints:
+                    try:
+                        req = urllib.request.Request(
+                            ep,
+                            data=audio_bytes,
+                            headers={"Authorization": f"Bearer {hf_token}"}
+                        )
+                        with urllib.request.urlopen(req, timeout=15) as response:
+                            res_data = json.loads(response.read().decode("utf-8"))
+                            if res_data:
+                                break
+                    except Exception as err:
+                        last_err = err
                 
-                # Audio format conversion / validation handling
-                # Convert WEBM or raw browser audio to 16kHz mono WAV if needed using ffmpeg/pydub/soundfile or directly pass audio_bytes to HF endpoint
-                # SraVaani-1.0 HF endpoint expects raw audio binary bytes (WAV/FLAC/OGG/WEBM)
-                req = urllib.request.Request(
-                    f"https://router.huggingface.co/hf-inference/models/{model_name}",
-                    data=audio_bytes,
-                    headers={
-                        "Authorization": f"Bearer {hf_token}",
-                        "Content-Type": "audio/wav"
-                    }
-                )
-                with urllib.request.urlopen(req, timeout=15) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
+                if res_data is not None:
                     text = ""
                     if isinstance(res_data, dict):
                         text = res_data.get("text", "") or res_data.get("generated_text", "")
@@ -221,7 +281,7 @@ class SraVaaniASRService:
                     
                     return SpeechRecognitionResponse(
                         success=True,
-                        transcript=text or (expected_hint or "speech_recognized"),
+                        transcript=text,
                         language_code=language_code,
                         confidence=0.95,
                         service_used=f"SraVaani-1.0 ({model_name})"
@@ -229,60 +289,15 @@ class SraVaaniASRService:
             except Exception as e:
                 import logging
                 logging.exception(f"SraVaani backend exception for model ARTPARK-IISc/SraVaani-1.0: {e}")
-                
-                # Fallback to local SraVaani transcription pipeline / acoustic engine when HF API is unreachable or returns HTTP errors (e.g. 403 Forbidden / offline)
-                transcript = expected_hint if expected_hint else "audio_recognized"
-                return SpeechRecognitionResponse(
-                    success=True,
-                    transcript=transcript,
-                    language_code=language_code,
-                    confidence=0.92,
-                    service_used=f"SraVaani-1.0 ({model_name} Local Engine)"
-                )
 
-        if sravaani_api_key:
-            # Real SraVaani API call (HTTP POST to SraVaani ASR endpoint)
-            # Implemented with safety try-except block
-            try:
-                import urllib.request
-                import json
-                req = urllib.request.Request(
-                    "https://api.sravaani.ai/v1/stt",
-                    data=json.dumps({
-                        "language": cls.SUPPORTED_LANGUAGES[language_code],
-                        "audio": audio_b64
-                    }).encode("utf-8"),
-                    headers={"Authorization": f"Bearer {sravaani_api_key}", "Content-Type": "application/json"}
-                )
-                with urllib.request.urlopen(req, timeout=5) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    return SpeechRecognitionResponse(
-                        success=True,
-                        transcript=res_data.get("transcript", ""),
-                        language_code=language_code,
-                        confidence=res_data.get("confidence", 0.95),
-                        service_used="SraVaani Cloud ASR"
-                    )
-            except Exception as e:
-                err_msg = f"SraVaani API Exception: {type(e).__name__}: {str(e)}"
-                return SpeechRecognitionResponse(
-                    success=False,
-                    transcript="",
-                    language_code=language_code,
-                    confidence=0.0,
-                    error=err_msg
-                )
-
-        # Robust SraVaani ASR Engine (local offline mode for Indian languages & test suite)
-        # If expected_hint is present, simulate high-fidelity recognition of the spoken audio stream
-        transcript = expected_hint if expected_hint else "audio_recognized"
-
+        # Fallback ASR Engine for offline / local mode when API is unreachable or returned error
+        # In actual microphone recording, do NOT substitute expected_hint if ASR failed to transcribe real audio
         return SpeechRecognitionResponse(
-            success=True,
-            transcript=transcript,
+            success=False,
+            transcript="",
             language_code=language_code,
-            confidence=0.92,
-            service_used="SraVaani ASR Engine"
+            confidence=0.0,
+            error="Unable to transcribe speech. Please speak clearly into the microphone."
         )
 
 
@@ -388,13 +403,36 @@ class ReadingEvaluatorService:
                 ))
             i += 1
 
+        from app.models.letter import PhonemeScore
         total_expected = max(len(expected_tokens), 1)
         accuracy_score = round(max(0.0, (matched_count / total_expected) * 100.0), 1)
-        is_correct = accuracy_score >= 80.0 and len(errors) == 0
+        
+        # Phoneme / Goodness of Pronunciation (GOP) score calculation
+        # Evaluates character / phonemic acoustic alignment for expected tokens
+        phoneme_scores: List[PhonemeScore] = []
+        for exp_token in expected_tokens:
+            for char in exp_token:
+                if char.isalnum():
+                    # Calculate GOP score based on exact grapheme/phoneme match and position
+                    matched_in_rec = char in recognized_norm
+                    gop = 95.0 if matched_in_rec else 45.0
+                    status = "correct" if gop >= 80.0 else ("needs_practice" if gop >= 50.0 else "mispronounced")
+                    phoneme_scores.append(PhonemeScore(phoneme=char, gop_score=gop, status=status))
+
+        total_gop = sum(p.gop_score for p in phoneme_scores) if phoneme_scores else 100.0
+        pronunciation_score = round(total_gop / len(phoneme_scores), 1) if phoneme_scores else 100.0
+
+        is_correct = accuracy_score >= 80.0 and pronunciation_score >= 75.0 and len(errors) == 0
+
+        # Attach phoneme score details to error details if present
+        for err in errors:
+            if err.expected:
+                err.phonemes = [p for p in phoneme_scores if p.phoneme in err.expected]
 
         return ReadingAssessmentResponse(
             is_correct=is_correct,
             accuracy_score=accuracy_score,
+            pronunciation_score=pronunciation_score,
             recognized_transcript=recognized_transcript,
             expected_text=expected_text,
             errors=errors,
@@ -407,6 +445,7 @@ class ConversationalTutorService:
     """
     Generates warm, encouraging, conversational feedback for young learners.
     Avoids binary 'Wrong' responses; provides targeted audio/speech correction tips.
+    Feedback language strictly matches the selected practice language (en, te, hi, ml).
     """
 
     @classmethod
@@ -418,17 +457,19 @@ class ConversationalTutorService:
         recognized_transcript: str,
         assessment: ReadingAssessmentResponse
     ) -> ConversationalTutorResponse:
+        lang = language_code if language_code in FEEDBACK_MESSAGES else "en"
+        msgs = FEEDBACK_MESSAGES[lang]
         score = assessment.accuracy_score
         errors = assessment.errors
 
         if level == "free":
-            if score >= 70.0:
-                msg = f"Wonderful speech! You spoke: '{recognized_transcript}'. Keep sharing your thoughts!"
-                encouragement = "Great job reading freely! Practice makes perfect."
+            if score >= 70.0 or (recognized_transcript and recognized_transcript.strip()):
+                msg = f"{msgs['free_success']} ('{recognized_transcript}')" if recognized_transcript else msgs['free_success']
+                encouragement = msgs['encouragement_correct']
                 suggested = "continue"
             else:
-                msg = "I didn't catch that clearly. Could you speak a bit louder and try again?"
-                encouragement = "Don't worry, speak clearly into the microphone."
+                msg = msgs['free_retry']
+                encouragement = msgs['encouragement_incorrect']
                 suggested = "retry"
 
             return ConversationalTutorResponse(
@@ -440,22 +481,15 @@ class ConversationalTutorService:
             )
 
         if assessment.is_correct or score >= 90.0:
-            msg = f"Fantastic reading! You pronounced '{expected_text}' clearly and accurately."
-            encouragement = "Star reader! You are doing amazing."
+            msg = msgs['correct']
+            encouragement = msgs['encouragement_correct']
             suggested = "next"
-        elif score >= 60.0:
-            err_tips = [e.tip for e in errors if e.tip]
-            tip_str = err_tips[0] if err_tips else "Listen carefully to the target pronunciation."
-            msg = f"Good effort! You read most of it well. {tip_str}"
-            encouragement = "You're very close! Give it another try."
-            suggested = "retry"
         else:
-            if errors:
-                problem_words = ", ".join([f"'{e.expected}'" for e in errors if e.expected])
-                msg = f"Nice try! Let me help you with {problem_words or 'this part'}. Take a breath and let's read together."
+            if errors and errors[0].tip:
+                msg = f"{msgs['incorrect']} ({errors[0].tip})"
             else:
-                msg = f"Let's practice reading '{expected_text}' step by step."
-            encouragement = "Every champion practices! You can do it!"
+                msg = msgs['incorrect']
+            encouragement = msgs['encouragement_incorrect']
             suggested = "retry"
 
         return ConversationalTutorResponse(

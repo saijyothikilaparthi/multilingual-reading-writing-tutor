@@ -3,46 +3,31 @@
   "language_name": "English",
   "script_name": "Latin",
   "characters": [
-    {
-      "letter_id": "en_A",
-      "char": "A",
-      "unicode_value": "U+0041",
-      "display_name": "A",
-      "strokes": [
-        {
-          "stroke_index": 0,
-          "start_point": { "x": 0.5, "y": 0.15 },
-          "end_point": { "x": 0.2, "y": 0.85 },
-          "path_points": [
-            { "x": 0.5, "y": 0.15 },
-            { "x": 0.35, "y": 0.5 },
-            { "x": 0.2, "y": 0.85 }
-          ],
-          "direction_description": "Slant down to the left"
-        },
-        {
-          "stroke_index": 1,
-          "start_point": { "x": 0.5, "y": 0.15 },
-          "end_point": { "x": 0.8, "y": 0.85 },
-          "path_points": [
-            { "x": 0.5, "y": 0.15 },
-            { "x": 0.65, "y": 0.5 },
-            { "x": 0.8, "y": 0.85 }
-          ],
-          "direction_description": "Slant down to the right"
-        },
-        {
-          "stroke_index": 2,
-          "start_point": { "x": 0.3, "y": 0.55 },
-          "end_point": { "x": 0.7, "y": 0.55 },
-          "path_points": [
-            { "x": 0.3, "y": 0.55 },
-            { "x": 0.5, "y": 0.55 },
-            { "x": 0.7, "y": 0.55 }
-          ],
-          "direction_description": "Horizontal crossbar left to right"
-        }
-      ]
-    }
+    { "letter_id": "en_A", "char": "A", "unicode_value": "U+0041", "display_name": "A" },
+    { "letter_id": "en_B", "char": "B", "unicode_value": "U+0042", "display_name": "B" },
+    { "letter_id": "en_C", "char": "C", "unicode_value": "U+0043", "display_name": "C" },
+    { "letter_id": "en_D", "char": "D", "unicode_value": "U+0044", "display_name": "D" },
+    { "letter_id": "en_E", "char": "E", "unicode_value": "U+0045", "display_name": "E" },
+    { "letter_id": "en_F", "char": "F", "unicode_value": "U+0046", "display_name": "F" },
+    { "letter_id": "en_G", "char": "G", "unicode_value": "U+0047", "display_name": "G" },
+    { "letter_id": "en_H", "char": "H", "unicode_value": "U+0048", "display_name": "H" },
+    { "letter_id": "en_I", "char": "I", "unicode_value": "U+0049", "display_name": "I" },
+    { "letter_id": "en_J", "char": "J", "unicode_value": "U+004A", "display_name": "J" },
+    { "letter_id": "en_K", "char": "K", "unicode_value": "U+004B", "display_name": "K" },
+    { "letter_id": "en_L", "char": "L", "unicode_value": "U+004C", "display_name": "L" },
+    { "letter_id": "en_M", "char": "M", "unicode_value": "U+004D", "display_name": "M" },
+    { "letter_id": "en_N", "char": "N", "unicode_value": "U+004E", "display_name": "N" },
+    { "letter_id": "en_O", "char": "O", "unicode_value": "U+004F", "display_name": "O" },
+    { "letter_id": "en_P", "char": "P", "unicode_value": "U+0050", "display_name": "P" },
+    { "letter_id": "en_Q", "char": "Q", "unicode_value": "U+0051", "display_name": "Q" },
+    { "letter_id": "en_R", "char": "R", "unicode_value": "U+0052", "display_name": "R" },
+    { "letter_id": "en_S", "char": "S", "unicode_value": "U+0053", "display_name": "S" },
+    { "letter_id": "en_T", "char": "T", "unicode_value": "U+0054", "display_name": "T" },
+    { "letter_id": "en_U", "char": "U", "unicode_value": "U+0055", "display_name": "U" },
+    { "letter_id": "en_V", "char": "V", "unicode_value": "U+0056", "display_name": "V" },
+    { "letter_id": "en_W", "char": "W", "unicode_value": "U+0057", "display_name": "W" },
+    { "letter_id": "en_X", "char": "X", "unicode_value": "U+0058", "display_name": "X" },
+    { "letter_id": "en_Y", "char": "Y", "unicode_value": "U+0059", "display_name": "Y" },
+    { "letter_id": "en_Z", "char": "Z", "unicode_value": "U+005A", "display_name": "Z" }
   ]
 }

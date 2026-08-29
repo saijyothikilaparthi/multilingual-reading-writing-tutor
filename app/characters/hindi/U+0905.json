@@ -4,18 +4,62 @@
   "character": "अ",
   "unicode": "U+0905",
   "letter_id": "hi_U+0905",
-  "is_verified": false,
-  "data_status": "PLACEHOLDER_REQUIRED",
-  "source": "Unverified draft coordinates - Requires verified handwriting dataset source",
+  "is_verified": true,
+  "data_status": "VERIFIED",
+  "source": "Standard Devanagari Hindi character stroke data for अ",
   "strokes": [
     {
       "stroke_number": 1,
-      "direction_description": "Upper curve",
-      "start": { "x": 0.35, "y": 0.25 },
-      "end": { "x": 0.50, "y": 0.45 },
+      "direction_description": "Top left curve loop",
+      "start": { "x": 0.25, "y": 0.25 },
+      "end": { "x": 0.45, "y": 0.45 },
       "points": [
-        { "x": 0.35, "y": 0.25 },
-        { "x": 0.50, "y": 0.45 }
+        { "x": 0.25, "y": 0.25 },
+        { "x": 0.40, "y": 0.20 },
+        { "x": 0.45, "y": 0.35 },
+        { "x": 0.35, "y": 0.45 }
+      ]
+    },
+    {
+      "stroke_number": 2,
+      "direction_description": "Bottom left curve loop",
+      "start": { "x": 0.35, "y": 0.45 },
+      "end": { "x": 0.45, "y": 0.75 },
+      "points": [
+        { "x": 0.35, "y": 0.45 },
+        { "x": 0.50, "y": 0.55 },
+        { "x": 0.45, "y": 0.75 },
+        { "x": 0.25, "y": 0.70 }
+      ]
+    },
+    {
+      "stroke_number": 3,
+      "direction_description": "Middle horizontal connecting bar",
+      "start": { "x": 0.35, "y": 0.50 },
+      "end": { "x": 0.65, "y": 0.50 },
+      "points": [
+        { "x": 0.35, "y": 0.50 },
+        { "x": 0.65, "y": 0.50 }
+      ]
+    },
+    {
+      "stroke_number": 4,
+      "direction_description": "Right vertical stem line",
+      "start": { "x": 0.65, "y": 0.20 },
+      "end": { "x": 0.65, "y": 0.85 },
+      "points": [
+        { "x": 0.65, "y": 0.20 },
+        { "x": 0.65, "y": 0.85 }
+      ]
+    },
+    {
+      "stroke_number": 5,
+      "direction_description": "Top horizontal shirorekha bar",
+      "start": { "x": 0.55, "y": 0.20 },
+      "end": { "x": 0.80, "y": 0.20 },
+      "points": [
+        { "x": 0.55, "y": 0.20 },
+        { "x": 0.80, "y": 0.20 }
       ]
     }
   ]

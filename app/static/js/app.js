@@ -89,11 +89,10 @@ class MultilingualTutorApp {
       this.goToStep('language');
     });
 
-    // Writing Controls
-    this.demoBtn.addEventListener('click', () => this.playDemonstration());
-    this.clearBtn.addEventListener('click', () => this.clearUserCanvas());
-    this.submitBtn.addEventListener('click', () => this.evaluateWriting());
-    this.setupDrawingEvents();
+    this.nextLetterBtn = document.getElementById('nextLetterBtn');
+    if (this.nextLetterBtn) {
+      this.nextLetterBtn.addEventListener('click', () => this.goToNextLetter());
+    }
 
     // Reading Level Tabs
     const levelTabs = document.querySelectorAll('.level-tab');
@@ -191,11 +190,12 @@ class MultilingualTutorApp {
       const response = await fetch(`/api/languages/${langCode}/characters`);
       if (!response.ok) throw new Error('Failed to load language character data');
 
-      const characters = await response.json();
-      if (characters.length === 0) throw new Error('No character definitions found for this language');
+      this.characters = await response.json();
+      if (!this.characters || this.characters.length === 0) throw new Error('No character definitions found for this language');
 
-      const firstChar = characters[0];
-      await this.loadLetterAndStart(firstChar.letter_id);
+      this.currentCharIndex = 0;
+      this.selectedCharacter = this.characters[this.currentCharIndex];
+      await this.loadLetterAndStart(this.selectedCharacter.letter_id);
     } catch (err) {
       this.showFeedback(err.message, 'error');
     }
@@ -218,6 +218,14 @@ class MultilingualTutorApp {
     } catch (err) {
       this.showFeedback(err.message, 'error');
     }
+  }
+
+  goToNextLetter() {
+    if (!this.characters || this.characters.length === 0) return;
+    this.currentCharIndex = (this.currentCharIndex + 1) % this.characters.length;
+    this.selectedCharacter = this.characters[this.currentCharIndex];
+    this.clearUserCanvas();
+    this.loadLetterAndStart(this.selectedCharacter.letter_id);
   }
 
   resizeCanvases() {
@@ -244,7 +252,7 @@ class MultilingualTutorApp {
     const h = this.userCanvas.height;
 
     this.userCtx.save();
-    this.userCtx.strokeStyle = '#e2e8f0';
+    this.userCtx.strokeStyle = '#cbd5e1';
     this.userCtx.lineWidth = 1;
     this.userCtx.setLineDash([5, 5]);
 
@@ -420,8 +428,8 @@ class MultilingualTutorApp {
       this.currentStroke = [point];
 
       this.userCtx.save();
-      this.userCtx.strokeStyle = '#2c3e50';
-      this.userCtx.lineWidth = 8;
+      this.userCtx.strokeStyle = '#1e293b';
+      this.userCtx.lineWidth = 10;
       this.userCtx.lineCap = 'round';
       this.userCtx.lineJoin = 'round';
       this.userCtx.beginPath();
@@ -540,15 +548,18 @@ class MultilingualTutorApp {
     this.readingLevelBadge.textContent = this.formatLevelName(this.readingLevel);
     this.readingItemCounter.textContent = `Item ${this.readingIndex + 1} / ${this.readingItems.length}`;
     
-    // Free Reading Mode: hide target text and show conversation prompt
+    // Free Reading Mode: hide target text and demo button, show conversational prompt
     if (this.readingLevel === 'free') {
-      this.readingTargetText.textContent = '🗣️ Free Reading & Speech';
-      this.readingTransliteration.textContent = item.display_text || 'Speak freely into the mic in your chosen language!';
+      this.readingTargetText.textContent = '🗣️ Free Reading & Conversational Tutor';
+      this.readingTransliteration.textContent = item.display_text || 'Talk or read anything freely! The voice tutor will listen and respond to you.';
       if (this.btnReadingDemo) this.btnReadingDemo.style.display = 'none';
     } else {
       this.readingTargetText.textContent = item.display_text;
       this.readingTransliteration.textContent = item.transliteration || '';
-      if (this.btnReadingDemo) this.btnReadingDemo.style.display = 'inline-block';
+      if (this.btnReadingDemo) {
+        this.btnReadingDemo.style.display = 'inline-block';
+        this.btnReadingDemo.disabled = false;
+      }
     }
 
     // Reset feedback display & status
@@ -560,17 +571,14 @@ class MultilingualTutorApp {
       this.readingStatusBanner.className = 'feedback-banner';
     }
 
-    // Button states - enable/disable Previous & Next correctly
-    if (this.btnPrevReadingItem) this.btnPrevReadingItem.disabled = (this.readingIndex === 0);
-    if (this.btnNextReadingItem) this.btnNextReadingItem.disabled = (this.readingIndex === this.readingItems.length - 1);
-
-    // Automatically play demo reading target on item load if not free reading
-    if (this.readingLevel !== 'free') {
-      setTimeout(() => this.playReadingDemo(), 400);
+    // Button states - cycle Next Item button across all characters/items
+    if (this.btnNextReadingItem) {
+      this.btnNextReadingItem.disabled = false;
     }
   }
 
   playReadingDemo() {
+    if (this.readingLevel === 'free') return;
     const item = this.readingItems[this.readingIndex];
     if (!item) return;
 
@@ -586,15 +594,32 @@ class MultilingualTutorApp {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Select natural child-friendly voices with Indian English accent fallback
-    const voices = window.speechSynthesis.getVoices();
-    const langMap = { en: ['en-IN', 'en-GB', 'en-US'], te: ['te-IN', 'te'], hi: ['hi-IN', 'hi'], ml: ['ml-IN', 'ml'] };
+    // Ensure voices are loaded (handling Chrome's async voice loading)
+    let voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        this.speakText(text, langCode);
+      };
+      return;
+    }
+
+    const langMap = {
+      en: ['en-IN', 'en-GB', 'en-US'],
+      te: ['te-IN', 'te'],
+      hi: ['hi-IN', 'hi'],
+      ml: ['ml-IN', 'ml']
+    };
     const preferredLangs = langMap[langCode] || ['en-IN', 'en-US'];
 
     let matchedVoice = null;
     for (const targetLang of preferredLangs) {
-      matchedVoice = voices.find(v => v.lang === targetLang || v.lang.startsWith(targetLang));
+      matchedVoice = voices.find(v => v.lang === targetLang || v.lang.startsWith(targetLang) || v.lang.replace('_', '-').startsWith(targetLang));
       if (matchedVoice) break;
+    }
+
+    if (!matchedVoice) {
+      // Fallback: search by language prefix
+      matchedVoice = voices.find(v => v.lang.startsWith(langCode));
     }
 
     if (matchedVoice) {
@@ -604,7 +629,7 @@ class MultilingualTutorApp {
       utterance.lang = preferredLangs[0];
     }
 
-    // Natural child-friendly speed (0.85-0.9x)
+    // Natural child-friendly speech rate (0.85 - 0.9x speed)
     utterance.rate = 0.88;
     utterance.pitch = 1.05;
 
@@ -758,11 +783,10 @@ class MultilingualTutorApp {
     // Status Banner for SUCCESS / ERROR
     if (this.readingStatusBanner) {
       if (assessment.is_correct) {
-        this.readingStatusBanner.textContent = `🎉 SUCCESS! Accuracy: ${assessment.accuracy_score}%`;
+        this.readingStatusBanner.textContent = `🎉 SUCCESS! Word Accuracy: ${assessment.accuracy_score}% | Pronunciation Score (GOP): ${assessment.pronunciation_score || 100}%`;
         this.readingStatusBanner.className = 'feedback-banner show success';
       } else {
-        const errorDetail = assessment.errors && assessment.errors.length > 0 ? assessment.errors[0].tip : 'Please practice again.';
-        this.readingStatusBanner.textContent = `❌ NEEDS PRACTICE! ${errorDetail}`;
+        this.readingStatusBanner.textContent = `💡 Practice Needed! Word Accuracy: ${assessment.accuracy_score}% | Pronunciation Score: ${assessment.pronunciation_score || 0}%`;
         this.readingStatusBanner.className = 'feedback-banner show error';
       }
       this.readingStatusBanner.style.display = 'block';

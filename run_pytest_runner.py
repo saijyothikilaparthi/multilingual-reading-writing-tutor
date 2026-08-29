@@ -44,7 +44,7 @@ def run_all_tests():
             failed_count += 1
 
     print()
-    print(f"========================== {passed_count} passed in 0.44s ==========================")
+    print(f"========================== {passed_count} passed, {failed_count} failed ==========================")
     return failed_count
 
 if __name__ == "__main__":
