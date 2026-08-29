@@ -15,7 +15,8 @@ from app.models.letter import (
     ReadingAssessmentRequest,
     ReadingAssessmentResponse,
     ConversationalTutorRequest,
-    ConversationalTutorResponse
+    ConversationalTutorResponse,
+    ReadingProcessRequest
 )
 from app.services.evaluator import (
     load_all_character_templates,
@@ -122,12 +123,14 @@ def conversational_tutor(request: ConversationalTutorRequest):
 
 @app.post("/api/reading/process-full")
 def process_full_reading_attempt(
-    language_code: str,
-    level: str,
-    expected_text: str,
-    audio_b64: Optional[str] = None
+    req: ReadingProcessRequest
 ):
     """Integrated REST endpoint combining ASR, Assessment, and Conversational Tutor."""
+    language_code = req.language_code
+    level = req.level
+    expected_text = req.expected_text or ""
+    audio_b64 = req.audio_b64
+
     asr_res = SraVaaniASRService.transcribe_audio(
         language_code=language_code,
         audio_b64=audio_b64,

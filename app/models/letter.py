@@ -62,6 +62,12 @@ class SpeechRecognitionRequest(BaseModel):
     audio_b64: Optional[str] = Field(None, description="Base64 encoded audio bytes (WAV/WEBM/PCM)")
     sample_rate: int = Field(default=16000, description="Audio sample rate in Hz")
 
+class ReadingProcessRequest(BaseModel):
+    language_code: str = Field(default="en", description="Language code: en, te, hi, ml")
+    level: str = Field(default="basic", description="Reading level")
+    expected_text: Optional[str] = Field(default="", description="Expected text or hint")
+    audio_b64: Optional[str] = Field(default=None, description="Base64 encoded audio bytes")
+
 class SpeechRecognitionResponse(BaseModel):
     success: bool
     transcript: str
