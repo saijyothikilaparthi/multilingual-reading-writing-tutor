@@ -1,4 +1,4 @@
-#!/home/sai_jyothi/hackathon/.venv/bin/python3
+#!/home/abhi/multilingual-reading-writing-tutor/.venv/bin/python3
 import sys
 from pygments.cmdline import main
 if __name__ == '__main__':

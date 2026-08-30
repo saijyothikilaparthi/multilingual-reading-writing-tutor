@@ -723,6 +723,13 @@ class MultilingualTutorApp {
     
     try {
       this.websocket = new WebSocket(wsUrl);
+      this.websocket.onerror = (err) => {
+        console.warn('WebSocket streaming unavailable, using REST audio processing fallback.');
+        if (this.websocket) {
+          try { this.websocket.close(); } catch (_) {}
+          this.websocket = null;
+        }
+      };
       this.websocket.onopen = () => {
         const item = this.readingItems[this.readingIndex] || {};
         this.websocket.send(JSON.stringify({
