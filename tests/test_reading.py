@@ -123,7 +123,22 @@ def test_sravaani_asr_fallback_mode(monkeypatch):
     response = client.post("/api/reading/recognize?expected_hint=అమ్మ", json=payload)
     assert response.status_code == 200
     res = response.json()
-    assert "success" in res
+    assert res["success"] is False
+    assert res["transcript"] == ""
+    assert "Unable to transcribe" in res["error"]
+
+def test_sravaani_asr_does_not_force_success_on_fallback():
+    # Regression test: Ensure expected_hint is NOT substituted on fallback to prevent false success on incorrect pronunciation
+    audio_sample = "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="
+    payload = {
+        "language_code": "en",
+        "audio_b64": audio_sample
+    }
+    response = client.post("/api/reading/recognize?expected_hint=A", json=payload)
+    assert response.status_code == 200
+    res = response.json()
+    assert res["success"] is False
+    assert res["transcript"] != "A"
 
 def test_reading_assessment_accuracy():
     # Accurate match

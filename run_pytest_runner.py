@@ -31,7 +31,7 @@ def run_all_tests():
             if "monkeypatch" in sig.parameters:
                 mp = MonkeyPatch()
                 try:
-                    func(mp)
+                    func(monkeypatch=mp)
                 finally:
                     mp.undo()
             else:
