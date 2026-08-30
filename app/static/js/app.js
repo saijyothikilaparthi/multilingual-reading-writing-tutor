@@ -94,6 +94,12 @@ class MultilingualTutorApp {
       this.nextLetterBtn.addEventListener('click', () => this.goToNextLetter());
     }
 
+    // Writing Controls
+    if (this.demoBtn) this.demoBtn.addEventListener('click', () => this.playDemonstration());
+    if (this.clearBtn) this.clearBtn.addEventListener('click', () => this.clearUserCanvas());
+    if (this.submitBtn) this.submitBtn.addEventListener('click', () => this.evaluateWriting());
+    this.setupDrawingEvents();
+
     // Reading Level Tabs
     const levelTabs = document.querySelectorAll('.level-tab');
     levelTabs.forEach(tab => {
@@ -229,11 +235,10 @@ class MultilingualTutorApp {
   }
 
   resizeCanvases() {
-    const rect = this.userCanvas.getBoundingClientRect();
-    this.demoCanvas.width = rect.width;
-    this.demoCanvas.height = rect.height;
-    this.userCanvas.width = rect.width;
-    this.userCanvas.height = rect.height;
+    this.demoCanvas.width = 320;
+    this.demoCanvas.height = 320;
+    this.userCanvas.width = 320;
+    this.userCanvas.height = 320;
   }
 
   clearDemoCanvas() {
@@ -267,9 +272,9 @@ class MultilingualTutorApp {
   }
 
   async playDemonstration() {
-    if (this.animating || !this.letterTemplate) return;
+    if (!this.letterTemplate) return;
     this.animating = true;
-    this.clearDemoCanvas();
+    this.demoCtx.clearRect(0, 0, this.demoCanvas.width, this.demoCanvas.height);
 
     if (this.letterTemplate.is_verified === false) {
       this.showFeedback(`Note: Stroke template for '${this.letterTemplate.character}' (${this.letterTemplate.unicode}) is awaiting verified coordinates.`, 'info');
@@ -277,16 +282,16 @@ class MultilingualTutorApp {
       this.showFeedback(`Demonstrating '${this.letterTemplate.character}' stroke sequence...`, 'info');
     }
 
-    const w = this.demoCanvas.width;
-    const h = this.demoCanvas.height;
-    const strokes = this.letterTemplate.strokes;
+    const w = this.demoCanvas.width || 320;
+    const h = this.demoCanvas.height || 320;
+    const strokes = this.letterTemplate.strokes || [];
     const completedStrokes = [];
 
     for (let i = 0; i < strokes.length; i++) {
       const stroke = strokes[i];
       await this.animateStroke(stroke, w, h, completedStrokes);
       completedStrokes.push(stroke);
-      await this.sleep(400);
+      await this.sleep(200);
     }
 
     this.showFeedback(`Now your turn! Draw '${this.letterTemplate.character}' on the canvas.`, 'info');
@@ -300,12 +305,12 @@ class MultilingualTutorApp {
       const waypoints = refStroke.points.map(p => ({ x: p.x * w, y: p.y * h }));
 
       let currentStep = 0;
-      const totalSteps = 80;
+      const totalSteps = 40;
 
       const animate = () => {
         if (currentStep <= totalSteps) {
           const progress = currentStep / totalSteps;
-          this.clearDemoCanvas();
+          this.demoCtx.clearRect(0, 0, this.demoCanvas.width, this.demoCanvas.height);
 
           completedStrokes.forEach(prevStroke => {
             const pStart = { x: prevStroke.start.x * w, y: prevStroke.start.y * h };
@@ -411,25 +416,26 @@ class MultilingualTutorApp {
   setupDrawingEvents() {
     const getCoords = (e) => {
       const rect = this.userCanvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+      const scaleX = this.userCanvas.width / (rect.width || 320);
+      const scaleY = this.userCanvas.height / (rect.height || 320);
       return {
-        x: clientX - rect.left,
-        y: clientY - rect.top,
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
         t: Date.now()
       };
     };
 
     const startDrawing = (e) => {
-      if (this.animating) return;
       e.preventDefault();
       this.isDrawing = true;
       const point = getCoords(e);
       this.currentStroke = [point];
 
       this.userCtx.save();
-      this.userCtx.strokeStyle = '#1e293b';
-      this.userCtx.lineWidth = 10;
+      this.userCtx.strokeStyle = '#000000';
+      this.userCtx.lineWidth = 12;
       this.userCtx.lineCap = 'round';
       this.userCtx.lineJoin = 'round';
       this.userCtx.beginPath();
@@ -455,6 +461,11 @@ class MultilingualTutorApp {
         this.currentStroke = [];
       }
     };
+
+    this.userCanvas.addEventListener('pointerdown', startDrawing);
+    this.userCanvas.addEventListener('pointermove', draw);
+    this.userCanvas.addEventListener('pointerup', stopDrawing);
+    this.userCanvas.addEventListener('pointerleave', stopDrawing);
 
     this.userCanvas.addEventListener('mousedown', startDrawing);
     this.userCanvas.addEventListener('mousemove', draw);

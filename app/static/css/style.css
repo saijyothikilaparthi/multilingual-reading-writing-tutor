@@ -221,6 +221,7 @@ header p {
   box-shadow: 0 0 25px rgba(255, 119, 0, 0.35);
   background: #ffffff;
   overflow: hidden;
+  touch-action: none;
 }
 
 #demoCanvas, #userCanvas {
@@ -231,6 +232,7 @@ header p {
   height: 320px;
   border-radius: 18px;
   background: transparent;
+  touch-action: none;
 }
 
 #demoCanvas { z-index: 1; opacity: 0.65; }

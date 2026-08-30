@@ -89,3 +89,21 @@ def test_evaluate_correct_english_strokes():
     data = response.json()
     assert data["success"] is True
     assert data["score"] >= 70.0
+
+def test_writing_canvas_evaluation_payload_structure():
+    # Regression test: verify writing canvas evaluation payload structure & bounds
+    user_strokes = [
+        {"points": [{"x": 160, "y": 48}, {"x": 110, "y": 160}, {"x": 64, "y": 256}]}
+    ]
+    payload = {
+        "letter_id": "en_A",
+        "user_strokes": user_strokes,
+        "canvas_width": 320,
+        "canvas_height": 320
+    }
+    response = client.post("/api/evaluate", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "success" in data
+    assert "score" in data
+    assert "message" in data
