@@ -752,93 +752,6 @@ class MultilingualTutorApp {
   }
 
   async processRecordedAudio(audioBlob) {
-    // 1. Try browser Web Speech API (SpeechRecognition) for instant client-side ASR if available
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      try {
-        const currentItem = this.readingItems[this.readingIndex] || {};
-        const langMap = { en: 'en-US', te: 'te-IN', hi: 'hi-IN', ml: 'ml-IN' };
-        
-        const recognition = new SpeechRecognition();
-        recognition.lang = langMap[this.selectedLanguage] || 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        this.asrTranscriptText.textContent = 'Processing speech with Web Speech ASR...';
-
-        let recognizedText = '';
-        recognition.onresult = (event) => {
-          if (event.results && event.results[0] && event.results[0][0]) {
-            recognizedText = event.results[0][0].transcript;
-          }
-        };
-
-        recognition.onend = async () => {
-          if (recognizedText) {
-            // Evaluate speech via backend assessment service
-            await this.evaluateRecognizedTranscript(recognizedText, currentItem);
-            return;
-          }
-          // Fallback to backend ASR if WebSpeech did not return transcript
-          this.processRecordedAudioBackend(audioBlob);
-        };
-
-        recognition.onerror = () => {
-          this.processRecordedAudioBackend(audioBlob);
-        };
-
-        recognition.start();
-        return;
-      } catch (e) {
-        console.warn('Web Speech API start error, falling back to backend ASR:', e);
-      }
-    }
-
-    // 2. Fallback to Backend SraVaani ASR if Web Speech API is unavailable
-    this.processRecordedAudioBackend(audioBlob);
-  }
-
-  async evaluateRecognizedTranscript(recognizedText, currentItem) {
-    try {
-      const assessRes = await fetch('/api/reading/assess', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          language_code: this.selectedLanguage,
-          level: this.readingLevel,
-          expected_text: currentItem.expected_text || '',
-          recognized_transcript: recognizedText
-        })
-      });
-
-      const assessment = await assessRes.json();
-
-      const tutorRes = await fetch('/api/reading/tutor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          language_code: this.selectedLanguage,
-          level: this.readingLevel,
-          expected_text: currentItem.expected_text || '',
-          recognized_transcript: recognizedText,
-          assessment: assessment
-        })
-      });
-
-      const tutor = await tutorRes.json();
-
-      const asr = {
-        transcript: recognizedText,
-        service_used: 'Browser Web Speech ASR'
-      };
-
-      this.renderTutorFeedback(asr, assessment, tutor);
-    } catch (err) {
-      console.error('Evaluation error:', err);
-    }
-  }
-
-  async processRecordedAudioBackend(audioBlob) {
     const reader = new FileReader();
     reader.readAsDataURL(audioBlob);
     reader.onloadend = async () => {
@@ -846,7 +759,7 @@ class MultilingualTutorApp {
       const currentItem = this.readingItems[this.readingIndex] || {};
 
       try {
-        this.asrTranscriptText.textContent = 'Processing speech with SraVaani ASR...';
+        this.asrTranscriptText.textContent = 'Processing speech with Speech ASR...';
         
         const response = await fetch('/api/reading/process-full', {
           method: 'POST',
@@ -862,21 +775,72 @@ class MultilingualTutorApp {
         if (!response.ok) throw new Error('Speech recognition server error');
         const resData = await response.json();
 
-        if (resData.success) {
+        if (resData.success && resData.asr && resData.asr.transcript) {
           this.renderTutorFeedback(resData.asr, resData.assessment, resData.tutor);
         } else {
-          // System/ASR technical failure - clearly distinguish technical error from reading error
-          this.asrTranscriptText.textContent = `⚠️ System/ASR Technical Error: ${resData.error || 'Audio processing failed.'}`;
-          if (this.readingStatusBanner) {
-            this.readingStatusBanner.textContent = `⚙️ Technical Error: ${resData.error || 'Speech recognition engine unreachable'}`;
-            this.readingStatusBanner.className = 'feedback-banner show error';
-            this.readingStatusBanner.style.display = 'block';
+          // If server ASR returned error or silence, run client-side Web Speech recognition fallback
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (SpeechRecognition) {
+            this.runClientWebSpeechRecognition(currentItem, resData.error);
+          } else {
+            this.showTechnicalError(resData.error || 'Audio processing failed.');
           }
         }
       } catch (err) {
-        this.asrTranscriptText.textContent = `⚠️ Error: ${err.message}`;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          this.runClientWebSpeechRecognition(currentItem, err.message);
+        } else {
+          this.showTechnicalError(err.message);
+        }
       }
     };
+  }
+
+  runClientWebSpeechRecognition(currentItem, fallbackErr) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const langMap = { en: 'en-US', te: 'te-IN', hi: 'hi-IN', ml: 'ml-IN' };
+    
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = langMap[this.selectedLanguage] || 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      this.asrTranscriptText.textContent = 'Listening with Web Speech ASR...';
+
+      let recognizedText = '';
+      recognition.onresult = (event) => {
+        if (event.results && event.results[0] && event.results[0][0]) {
+          recognizedText = event.results[0][0].transcript;
+        }
+      };
+
+      recognition.onend = async () => {
+        if (recognizedText) {
+          await this.evaluateRecognizedTranscript(recognizedText, currentItem);
+        } else {
+          this.showTechnicalError(fallbackErr || 'Could not recognize speech.');
+        }
+      };
+
+      recognition.onerror = () => {
+        this.showTechnicalError(fallbackErr || 'Speech recognition failed.');
+      };
+
+      recognition.start();
+    } catch (e) {
+      this.showTechnicalError(fallbackErr || e.message);
+    }
+  }
+
+  showTechnicalError(errMsg) {
+    this.asrTranscriptText.textContent = `⚠️ System/ASR Technical Error: ${errMsg}`;
+    if (this.readingStatusBanner) {
+      this.readingStatusBanner.textContent = `⚙️ Technical Error: ${errMsg}`;
+      this.readingStatusBanner.className = 'feedback-banner show error';
+      this.readingStatusBanner.style.display = 'block';
+    }
   }
 
   renderTutorFeedback(asr, assessment, tutor) {
