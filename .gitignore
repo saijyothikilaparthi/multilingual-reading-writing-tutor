@@ -1,5 +1,23 @@
-.venv/
+# Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+
+# Pytest / Cache
 .pytest_cache/
+.latentcode/
+session-*.md
+run_pytest_runner.py
+
+# Local configuration / secrets
 .env
+.DS_Store
